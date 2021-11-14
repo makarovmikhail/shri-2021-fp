@@ -49,11 +49,8 @@ const countOrange = compose(getTrueCount, countBy(isOrange), getShapes);
 
 const equals1 = equals(1);
 const equals2 = equals(2);
-const moreThanOne = (a) => a && a > 1;
 const moreThanTwo = (a) => a && a > 2;
-const equalsOneOrMore = (a) => a && a >= 1;
 const equalsTwoOrMore = (a) => a && a >= 2;
-// const moreThanOne = (a) => a && a > 0;
 
 // 1. Красная звезда, зеленый квадрат, все остальные белые.
 export const validateFieldN1 = allPass([
@@ -64,7 +61,7 @@ export const validateFieldN1 = allPass([
 ]);
 
 // 2. Как минимум две фигуры зеленые.
-export const validateFieldN2 = compose(moreThanOne, countGreen);
+export const validateFieldN2 = compose(equalsTwoOrMore, countGreen);
 
 // 3. Количество красных фигур равно кол-ву синих.
 export const validateFieldN3 = ({star, square, triangle, circle}) => {
