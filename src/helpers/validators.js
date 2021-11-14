@@ -13,7 +13,17 @@
  * Если какие либо функции написаны руками (без использования библиотек) это не является ошибкой
  */
 
-import {allPass, equals, countBy, prop, anyPass, and, all, not} from "ramda";
+import {
+  allPass,
+  equals,
+  countBy,
+  prop,
+  anyPass,
+  and,
+  all,
+  not,
+  chain
+} from "ramda";
 import {compose} from "recompose";
 import {COLORS, SHAPES} from "../constants";
 
@@ -30,79 +40,67 @@ const getCircle = prop(SHAPES.CIRCLE);
 
 const getTrueCount = prop(true);
 
-const countRed = compose(getTrueCount, countBy(isRed));
-const countGreen = compose(getTrueCount, countBy(isGreen));
-const countWhite = compose(getTrueCount, countBy(isWhite));
-const countBlue = compose(getTrueCount, countBy(isBlue));
-const countOrange = compose(getTrueCount, countBy(isOrange));
+const getShapes = (shapes) => Object.values(shapes);
 
+const countRed = compose(getTrueCount, countBy(isRed), getShapes);
+const countGreen = compose(getTrueCount, countBy(isGreen), getShapes);
+const countBlue = compose(getTrueCount, countBy(isBlue), getShapes);
+const countOrange = compose(getTrueCount, countBy(isOrange), getShapes);
+
+const equals1 = equals(1);
 const equals2 = equals(2);
-const moreThanOne = (a) => a > 0;
+const moreThanOne = (a) => a && a > 1;
+const moreThanTwo = (a) => a && a > 2;
+const equalsOneOrMore = (a) => a && a >= 1;
+const equalsTwoOrMore = (a) => a && a >= 2;
+// const moreThanOne = (a) => a && a > 0;
 
 // 1. Красная звезда, зеленый квадрат, все остальные белые.
-export const validateFieldN1 = ({star, square, triangle, circle}) => {
-  if (triangle !== "white" || circle !== "white") {
-    return false;
-  }
-
-  return star === "red" && square === "green";
-};
+export const validateFieldN1 = allPass([
+  compose(isRed, getStar),
+  compose(isGreen, getSquare),
+  compose(isWhite, getTriangle),
+  compose(isWhite, getCircle)
+]);
 
 // 2. Как минимум две фигуры зеленые.
-export const validateFieldN2 = ({star, square, triangle, circle}) => {
-  const shapes = [star, square, triangle, circle];
-  const lessThanTwo = (count) => count && count > 1;
-  return compose(lessThanTwo, countGreen)(shapes);
-};
+export const validateFieldN2 = compose(moreThanOne, countGreen);
 
 // 3. Количество красных фигур равно кол-ву синих.
 export const validateFieldN3 = ({star, square, triangle, circle}) => {
-  const shapes = [star, square, triangle, circle];
-  const equalsBlue = equals(countBlue(shapes));
-  return compose(equalsBlue, countRed)(shapes);
+  const equalsBlue = equals(countBlue({star, square, triangle, circle}));
+  return compose(equalsBlue, countRed)({star, square, triangle, circle});
 };
 
 // 4. Синий круг, красная звезда, оранжевый квадрат
-export const validateFieldN4 = ({star, square, triangle, circle}) => {
-  return allPass([
-    compose(isOrange, getSquare),
-    compose(isRed, getStar),
-    compose(isBlue, getCircle)
-  ])({
-    square,
-    star,
-    circle
-  });
-};
+export const validateFieldN4 = allPass([
+  compose(isOrange, getSquare),
+  compose(isRed, getStar),
+  compose(isBlue, getCircle)
+]);
 
 // 5. Три фигуры одного любого цвета кроме белого (четыре фигуры одного цвета – это тоже true).
-export const validateFieldN5 = ({star, square, triangle, circle}) => {
-  const shapes = [star, square, triangle, circle];
-  const moreThanTwo = (count) => count && count > 2;
-
-  return anyPass([
-    compose(moreThanTwo, countRed),
-    compose(moreThanTwo, countGreen),
-    compose(moreThanTwo, countBlue),
-    compose(moreThanTwo, countOrange)
-  ])(shapes);
-};
+export const validateFieldN5 = anyPass([
+  compose(moreThanTwo, countRed),
+  compose(moreThanTwo, countGreen),
+  compose(moreThanTwo, countBlue),
+  compose(moreThanTwo, countOrange)
+]);
 
 // 6. Две зеленые фигуры (одна из них треугольник), еще одна любая красная.
 export const validateFieldN6 = ({star, square, triangle, circle}) =>
   and(
     compose(isGreen, getTriangle)({star, square, triangle, circle}),
-    allPass([compose(moreThanOne, countRed), compose(equals2, countGreen)])([
+    allPass([compose(equals1, countRed), compose(equals2, countGreen)])({
       star,
       square,
       triangle,
       circle
-    ])
+    })
   );
 
 // 7. Все фигуры оранжевые.
-export const validateFieldN7 = ({star, square, triangle, circle}) =>
-  all(isOrange)([star, square, triangle, circle]);
+export const validateFieldN7 = compose(all(isOrange), getShapes);
 
 // 8. Не красная и не белая звезда.
 export const validateFieldN8 = ({star}) =>
@@ -112,8 +110,7 @@ export const validateFieldN8 = ({star}) =>
   );
 
 // 9. Все фигуры зеленые.
-export const validateFieldN9 = ({star, square, triangle, circle}) =>
-  all(isGreen)([star, square, triangle, circle]);
+export const validateFieldN9 = compose(all(isGreen), getShapes);
 
 // 10. Треугольник и квадрат одного цвета (не белого)
 export const validateFieldN10 = ({square, triangle}) =>
