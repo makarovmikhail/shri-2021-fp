@@ -66,7 +66,7 @@ const processSequence = async ({
       })
     );
 
-  compose(
+  await compose(
     andThen(handleSuccess),
     andThen(getAnimal),
     andThen(tap(writeLog)),
