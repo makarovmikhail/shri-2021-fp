@@ -68,7 +68,6 @@ const processSequence = async ({
 
   compose(
     andThen(handleSuccess),
-    andThen(tap(writeLog)),
     andThen(getAnimal),
     andThen(tap(writeLog)),
     andThen(modByThree),
