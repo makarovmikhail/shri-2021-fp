@@ -53,6 +53,7 @@ const processSequence = async ({
         .then(({result}) => {
           res(result);
         })
+        .catch(handleError)
     );
 
   const getLength = (s) => s.toString().length;
@@ -61,9 +62,12 @@ const processSequence = async ({
 
   const getAnimal = (id) =>
     new Promise((res, rej) =>
-      api.get(`https://animals.tech/${id}`, {}).then(({result}) => {
-        res(result);
-      })
+      api
+        .get(`https://animals.tech/${id}`, {})
+        .then(({result}) => {
+          res(result);
+        })
+        .catch(handleError)
     );
 
   await compose(
